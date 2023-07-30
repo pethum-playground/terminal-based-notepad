@@ -5,6 +5,16 @@
 
 #define MAX_BUFFER_SIZE 5000
 
+int countWords(const char* str) {
+    int count = 0;
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (str[i] == ' ' && str[i+1] != ' ' && str[i+1] != '\0') {
+            count++;
+        }
+    }
+    return count + 1;
+}
+
 void openFile(const char* filename) {
     FILE* file = fopen(filename, "r");
     if (file == NULL) {
@@ -86,6 +96,12 @@ int main() {
             input[input_len++] = ch;
         }
     }
+
+        // Update the word count after each character is entered
+        move(0, 0); 
+        printw("Word Count: %d", countWords(input));
+        move(input_len / COLS + 2, input_len % COLS);
+        refresh();
 }
 
 
