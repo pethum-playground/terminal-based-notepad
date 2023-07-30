@@ -5,6 +5,25 @@
 
 #define MAX_BUFFER_SIZE 5000
 
+void correctCapitalization(char* str) {
+    int newSentence = 1;
+    for (int i = 0; str[i] != '\0'; i++) {
+        if (newSentence && str[i] >= 'a' && str[i] <= 'z') {
+            str[i] -= 'a' - 'A';
+            newSentence = 0;
+        } else if (!newSentence && str[i] >= 'A' && str[i] <= 'Z') {
+            str[i] += 'a' - 'A';
+        }
+
+        if (str[i] == '.' && (str[i+1] == ' ' || str[i+1] == '\0')) {
+            newSentence = 1;
+        } else if (str[i] == '\n') {
+            newSentence = 1;
+        }
+    }
+}
+
+
 int countWords(const char* str) {
     int count = 0;
     for (int i = 0; str[i] != '\0'; i++) {
@@ -98,15 +117,13 @@ int main() {
     }
 
         // Update the word count after each character is entered
-        move(0, 0); 
-        printw("Word Count: %d", countWords(input));
-        move(input_len / COLS + 2, input_len % COLS);
-        refresh();
+       
 }
 
 
     endwin();  // End curses mode
 
+    correctCapitalization(input);
     saveFile(filename, input);
 
     return 0;
