@@ -5,6 +5,7 @@
 
 // Maximum buffer size
 #define MAX_BUFFER_SIZE 5000
+#define SEARCH_BUFFER_SIZE 100
 
 // Function to correct the capitalization in a string
 void correctCapitalization(char *str)
@@ -17,6 +18,10 @@ void correctCapitalization(char *str)
             str[i] -= 'a' - 'A'; // Convert the first letter of a sentence to uppercase
             newSentence = 0;
         }
+        else if (!newSentence && str[i] >= 'A' && str[i] <= 'Z')
+        {
+            str[i] += 'a' - 'A'; // Convert non-first letters to lowercase
+        }
 
         // Set the flag for a new sentence if a period (.) is found followed by a space or end of string,
         // or if a newline character is found
@@ -28,26 +33,31 @@ void correctCapitalization(char *str)
 }
 
 // Function to search
-void search(const char *text, const char *term)
+void search(const char *input, const char *term, int term_length)
 {
-    const char *p = text;
+    int input_len = strlen(input);
+    int start = 0;
 
-    while ((p = strstr(p, term)) != NULL)
+    // Find the term in the input
+    for (int i = 0; i <= input_len - term_length; i++)
     {
-        // Calculate the position of the found term
-        int pos = p - text;
+        if (strncmp(input + i, term, term_length) == 0)
+        {
+            // Print the input up to the term
+            printw("%.*s", i - start, input + start);
 
-        // Move the cursor to the position of the found term
-        move(pos / COLS, pos % COLS);
+            // Highlight the term
+            attron(A_REVERSE);
+            printw("%.*s", term_length, input + i);
+            attroff(A_REVERSE);
 
-        // Highlight the found term
-        attron(A_REVERSE);
-        printw("%s", term);
-        attroff(A_REVERSE);
-
-        // Move the pointer past the found term
-        p += strlen(term);
+            start = i + term_length;
+            i = start - 1; // Continue searching from the end of the found term
+        }
     }
+
+    // Print the rest of the input
+    printw("%s", input + start);
 }
 
 // Function to open a file and display its content
@@ -86,7 +96,6 @@ void saveFile(const char *filename, const char *content)
 }
 
 // Main function
-// Main function
 int main(int argc, char *argv[])
 {
     initscr();            // Start curses mode
@@ -119,22 +128,7 @@ int main(int argc, char *argv[])
     // Main loop to get user input and handle commands
     while ((ch = getch()) != EOF)
     {
-        if (input_len >= 2 && strncmp(input + input_len - 2, ":/", 2) == 0) // Check if the user entered ':/term' to search for 'term'
-        {
-            echo(); // Enable echoing of typed characters
-
-            // Get the search term from user input
-            char term[MAX_BUFFER_SIZE];
-            getstr(term);
-
-            noecho(); // Disable echoing of typed characters
-
-            // Search for the term in the input
-            search(input, term);
-
-            continue; // Skip the rest of the loop iteration
-        }
-        else if (ch == '\n') // If the user enters a newline
+        if (ch == '\n') // If the user enters a newline
         {
             addch(ch);               // Display the newline
             input[input_len++] = ch; // Add the newline to the input
@@ -150,6 +144,19 @@ int main(int argc, char *argv[])
             {
                 endwin(); // End curses mode
                 return 0; // Exit the program
+            }
+            // Check if the user entered ':/' to search for a term
+            else if (input_len >= 3 && strcmp(input + input_len - 3, ":s\n") == 0)
+            {
+                input[input_len - 2] = '\0'; // Remove the ':/\n' from the input
+
+                echo(); // Enable echoing of typed characters
+                printw("Enter the term to search for: ");
+                char term[SEARCH_BUFFER_SIZE];
+                getstr(term); // Get the search term from user input
+                noecho(); // Disable echoing of typed characters
+
+                search(input, term, strlen(term)); // Search for the term in the input
             }
         }
         else if (ch == erasechar()) // If the user enters the erase character
