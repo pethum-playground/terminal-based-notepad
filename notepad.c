@@ -32,7 +32,7 @@ void correctCapitalization(char *str)
     }
 }
 
-// Function to search
+// Function to search a string
 void search(const char *input, const char *term, int term_length)
 {
     int input_len = strlen(input);
@@ -61,7 +61,7 @@ void search(const char *input, const char *term, int term_length)
 }
 
 // Function to open a file and display its content
-void openFile(const char *filename)
+void openFile(const char *filename, char *buffer)
 {
     FILE *file = fopen(filename, "r");
     if (file == NULL)
@@ -71,10 +71,13 @@ void openFile(const char *filename)
     }
 
     char c;
-    while ((c = fgetc(file)) != EOF)
+    int i = 0;
+    while ((c = fgetc(file)) != EOF && i < MAX_BUFFER_SIZE - 1)
     {
-        addch(c); // Display the content of the file
+        addch(c);        // Display the content of the file
+        buffer[i++] = c; // Load the content into the buffer
     }
+    buffer[i] = '\0'; // Null terminate the buffer
 
     fclose(file);
 }
@@ -117,7 +120,8 @@ int main(int argc, char *argv[])
         noecho();         // Disable echoing of typed characters
     }
 
-    openFile(filename); // Open and display the content of the file
+    char fileContent[MAX_BUFFER_SIZE] = "";
+    openFile(filename, fileContent); // Open and display the content of the file
 
     printw("\nStart typing. Enter ':wq' on a new line to save and exit, or ':q' to exit without saving:\n");
 
@@ -145,18 +149,18 @@ int main(int argc, char *argv[])
                 endwin(); // End curses mode
                 return 0; // Exit the program
             }
-            // Check if the user entered ':/' to search for a term
+            // Check if the user entered ':s' to search for a term
             else if (input_len >= 3 && strcmp(input + input_len - 3, ":s\n") == 0)
             {
-                input[input_len - 2] = '\0'; // Remove the ':/\n' from the input
+                input[input_len - 3] = '\0'; // Remove the ':s\n' from the input
 
                 echo(); // Enable echoing of typed characters
                 printw("Enter the term to search for: ");
                 char term[SEARCH_BUFFER_SIZE];
                 getstr(term); // Get the search term from user input
-                noecho(); // Disable echoing of typed characters
+                noecho();     // Disable echoing of typed characters
 
-                search(input, term, strlen(term)); // Search for the term in the input
+                search(fileContent, term, strlen(term)); // Search for the term in the existing file content
             }
         }
         else if (ch == erasechar()) // If the user enters the erase character
