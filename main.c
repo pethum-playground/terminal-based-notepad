@@ -3,7 +3,6 @@
 #include <string.h>
 #include <ncurses.h>
 
-// Maximum buffer size
 #define MAX_BUFFER_SIZE 5000
 #define SEARCH_BUFFER_SIZE 100
 
@@ -17,10 +16,6 @@ void correctCapitalization(char *str)
         {
             str[i] -= 'a' - 'A'; // Convert the first letter of a sentence to uppercase
             newSentence = 0;
-        }
-        else if (!newSentence && str[i] >= 'A' && str[i] <= 'Z')
-        {
-            str[i] += 'a' - 'A'; // Convert non-first letters to lowercase
         }
 
         // Set the flag for a new sentence if a period (.) is found followed by a space or end of string,
@@ -38,7 +33,6 @@ void search(const char *input, const char *term, int term_length)
     int input_len = strlen(input);
     int start = 0;
 
-    // Find the term in the input
     for (int i = 0; i <= input_len - term_length; i++)
     {
         if (strncmp(input + i, term, term_length) == 0)
@@ -52,11 +46,10 @@ void search(const char *input, const char *term, int term_length)
             attroff(A_REVERSE);
 
             start = i + term_length;
-            i = start - 1; // Continue searching from the end of the found term
+            i = start - 1;
         }
     }
 
-    // Print the rest of the input
     printw("%s", input + start);
 }
 
@@ -147,7 +140,7 @@ int main(int argc, char *argv[])
             else if (input_len >= 3 && strcmp(input + input_len - 3, ":q\n") == 0)
             {
                 endwin(); // End curses mode
-                return 0; // Exit the program
+                return 0;
             }
             // Check if the user entered ':s' to search for a term
             else if (input_len >= 3 && strcmp(input + input_len - 3, ":s\n") == 0)
@@ -200,8 +193,8 @@ int main(int argc, char *argv[])
 
     endwin(); // End curses mode
 
-    correctCapitalization(input); // Correct the capitalization in the input
-    saveFile(filename, input);    // Save the input to the file
+    correctCapitalization(input);
+    saveFile(filename, input);
 
     return 0;
 }
